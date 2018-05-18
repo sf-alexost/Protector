@@ -1,0 +1,7 @@
+protector.config:
+  type: config_object
+  label: 'Protector config'
+  mapping:
+    login:
+      type: text
+      label: 'Login'

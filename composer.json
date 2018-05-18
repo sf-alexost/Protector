@@ -1,0 +1,14 @@
+{
+  "name": "drupal/protector",
+  "type": "drupal-module",
+  "description": "enables shield if core updates are available",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/protector",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/protector",
+    "source": "http://cgit.drupalcode.org/protector"
+  },
+  "require": { }
+}

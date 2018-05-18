@@ -1,0 +1,150 @@
+<?php
+
+/**
+ * @file
+ * Contains protector.module.
+ */
+
+use Drupal\Core\Url;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Site\Settings;
+use Drupal\shield\ShieldMiddleware;
+
+/**
+ * Implements hook_help().
+ */
+function protector_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the protector module.
+    case 'help.page.protector':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('enables shield if core updates are available') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function protector_theme() {
+  return [
+    'protector' => [
+      'render element' => 'children',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_cron().
+ */
+function protector_cron() {
+$config_shield = \Drupal::configFactory()->getEditable('shield.settings');
+$config_protector = \Drupal::configFactory()->getEditable('protector.settings');
+$pass = $config_shield->get('credentials.shield.pass');
+$name = $config_shield->get('credentials.shield.user');
+$login = $config_protector->get('login');
+if (empty($name) and empty($login)) {
+  drupal_set_message(t("Please, enter shield credetials <a href='/admin/config/system/shield'>Dont use superuser pass!</a> "));
+  } elseif (!empty($name) and empty($login)) {
+    $config_protector->set('login', $name)->save(TRUE);
+   // \Drupal::logger('protagor')->notice(print_r($login, TRUE));
+    module_load_include('inc', 'update', 'update.report');
+    $available = update_get_available(TRUE);
+    $data = update_calculate_project_data($available);
+   // \Drupal::logger('protagor')->notice(print_r($data, TRUE));
+    if ($data[drupal][existing_version] == $data[drupal][latest_version]) {
+      $config_shield->set('credentials.shield.user', $login);
+      $config_shield->save(TRUE);
+      drupal_set_message(t("There are new vulnerabilties for core and we use shield to protect the project")); 
+    } else {
+    
+   // $config2->set('credentials.protector.user', $name);
+    $config_shield->clear('credentials.shield.user');
+    $config_shield->save(TRUE);
+    \Drupal::logger('protagor')->notice(print_r($login, TRUE));
+  drupal_set_message(t(" Your core is updated and there is no known vulnerabilities "));
+   }
+   
+  } elseif (empty($name) and !empty($login)) {
+    module_load_include('inc', 'update', 'update.report');
+    $available = update_get_available(TRUE);
+    $data = update_calculate_project_data($available);
+    if ($data[drupal][existing_version] == $data[drupal][latest_version]) {
+      $config_shield->set('credentials.shield.user', $login);
+      $config_shield->save(TRUE);
+      drupal_set_message(t("There are new vulnerabilties for core and we use shield to protect the project")); 
+    } else { 
+     drupal_set_message(t(" Your core is updated and there is no known vulnerabilities "));
+   }
+  } elseif (!empty($name) and !empty($login)) {
+    module_load_include('inc', 'update', 'update.report');
+    $available = update_get_available(TRUE);
+    $data = update_calculate_project_data($available);
+    if ($data[drupal][existing_version] == $data[drupal][latest_version]) {
+      drupal_set_message(t("Everything is good")); 
+    } else { 
+    $config_shield->clear('credentials.shield.user');
+    $config_shield->save(TRUE);
+     drupal_set_message(t(" Your core is updated and there is no known vulnerabilities "));
+   }
+  }
+}
+
+
+function protector_form_shield_admin_settings_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::configFactory()->getEditable('shield.settings');
+  $name = $config->get('credentials.shield.user');
+    $form['general']['activate'] = [
+      '#type' => 'radios',
+      '#title' => t('Shield is activated'),
+      '#default_value' => empty($name) ? 0 : 1, // get the value from settings
+      '#options' => [
+        '0' => t('Disabled'),
+        '1' => t('Enabled'),
+      ],
+    ];
+    $form['#validate'][] = '_protector_form_shield_admin_settings_validate';
+}
+
+
+function _protector_form_shield_admin_settings_validate(array &$form, FormStateInterface $form_state) {
+  $config = \Drupal::configFactory()->getEditable('shield.settings');
+  $name = $config->get('credentials.shield.user');
+  \Drupal::logger('protector')->notice(print_r($name, TRUE));
+
+    if ($form['general']['activate']['#default_value'] == 0) {
+      $config->clear('credentials.shield.user');
+      $config->save(TRUE);
+      \Drupal::logger('protector')->notice(print_r($name, TRUE));
+    } else {
+      $account = \Drupal\user\Entity\User::load('1');
+      $user = $account->getUsername();
+      $config->set('credentials.shield.user', $user);
+      $config->save(TRUE);
+    }
+}
+/**
+ * Implements hook_form_alter().
+
+function protector_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $config = \Drupal::configFactory()->getEditable('shield.settings');
+  $name = $config->get('credentials.shield.user');
+  if ($form_id == 'shield_admin_settings') {
+    dpm($form);
+    $form['general']['activate'] = [
+      '#type' => 'radios',
+      '#title' => t('Shield is activated'),
+      '#default_value' => empty($name) ? 0 : 1, // get the value from settings
+      '#options' => [
+        '0' => t('Disabled'),
+        '1' => t('Enabled'),
+      ],
+    ];
+    $form['#validate'][] = '#default_value';
+  } 
+}
+ */

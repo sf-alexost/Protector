@@ -1,0 +1,5 @@
+hello.config:
+  title: 'Protector Translatable config'
+  base_route_name: protector.admin.config
+  names:
+    - protector.config
