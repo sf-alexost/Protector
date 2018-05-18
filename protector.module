@@ -95,13 +95,13 @@ if (empty($name) and empty($login)) {
 }
 
 
-function protector_form_shield_admin_settings_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-  $config = \Drupal::configFactory()->getEditable('shield.settings');
-  $name = $config->get('credentials.shield.user');
+function protector_form_shield_admin_settings_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config_protector = \Drupal::configFactory()->getEditable('protector.settings');
+  $state = $config_protector->get('state');
     $form['general']['activate'] = [
       '#type' => 'radios',
       '#title' => t('Shield is activated'),
-      '#default_value' => empty($name) ? 0 : 1, // get the value from settings
+      '#default_value' => $state ? 1 : 0, // get the value from settings
       '#options' => [
         '0' => t('Disabled'),
         '1' => t('Enabled'),
@@ -111,7 +111,11 @@ function protector_form_shield_admin_settings_alter(&$form, \Drupal\Core\Form\Fo
 }
 
 
-function _protector_form_shield_admin_settings_validate(array &$form, FormStateInterface $form_state) {
+function _protector_form_shield_admin_settings_validate(&$form, FormStateInterface $form_state) {
+  $values = $form_state->getValues();
+  $config_protector = \Drupal::configFactory()->getEditable('protector.settings');
+  $config_protector->set('state', $values['general']['activate']);
+  $config_protector->save(TRUE);
   $config = \Drupal::configFactory()->getEditable('shield.settings');
   $name = $config->get('credentials.shield.user');
   \Drupal::logger('protector')->notice(print_r($name, TRUE));

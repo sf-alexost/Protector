@@ -3,5 +3,11 @@ protector.config:
   label: 'Protector config'
   mapping:
     login:
-      type: text
+      type: string
       label: 'Login'
+    password:
+      type: string
+      label: 'Password'
+    state:
+      type: boolean
+      label: 'Is Active'
