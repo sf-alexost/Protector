@@ -47,10 +47,11 @@ $config_protector = \Drupal::configFactory()->getEditable('protector.settings');
 $pass = $config_shield->get('credentials.shield.pass');
 $name = $config_shield->get('credentials.shield.user');
 $login = $config_protector->get('login');
+$password = $config_protector->get('password');
 $state = $config_protector->get('state');
 if ($state == 1) {
   if (empty($login)) {
-  drupal_set_message(t("Your shield is enabled but has no credentials to protect your site. Please, fill the form "));
+  drupal_set_message(t("Your shield is enabled but has no credentials to protect your site. Please, <a href='/admin/config/system/shield'>fill the form </a>"));
   } else {
   drupal_set_message(t("Your site is protected by shield "));
   }
@@ -61,18 +62,17 @@ else {
   $data = update_calculate_project_data($available);
     if ($data[drupal][existing_version] != $data[drupal][latest_version]) {
       if (empty($login)) {
-      drupal_set_message(t("There are new vulnerabilties for core but we have no credentials to protect the project"));
+      drupal_set_message(t("There are new vulnerabilties for core but we have no credentials to protect the project. Please <a href='/admin/config/system/shield'> fill the form </a>"));
       } else {
-      $config_shield->set('credentials.shield.user', $login);
-      $config_shield->save(TRUE);
+      $config_shield->set('credentials.shield.user', $login)->save(TRUE);
+      $config_shield->set('credentials.shield.pass', $password)->save(TRUE);
       drupal_set_message(t("There are new vulnerabilties for core and we use shield to protect the project"));
       }      
     } else {
-      $config_shield->clear('credentials.shield.user');
-      $config_shield->save(TRUE);
-      drupal_set_message(t("Your core is updated and dont need in shield for this moment"));
+      $config_shield->clear('credentials.shield.user')->save(TRUE);
+      $config_shield->clear('credentials.shield.pass')->save(TRUE);
+      drupal_set_message(t("Your core is updated and don`t need in shield for this moment"));
     } 
-
 }
 }
 
@@ -93,7 +93,6 @@ function protector_form_shield_admin_settings_alter(&$form, FormStateInterface $
       ],
     ];
      $form['#submit'][] = '_protector_form_shield_admin_settings_submit';
-  //  $form['#validate'][] = '_protector_form_shield_admin_settings_validate';
 }
 
 
@@ -104,25 +103,25 @@ function _protector_form_shield_admin_settings_submit($form, FormStateInterface 
   $config_protector->save(TRUE);
   $config_shield = \Drupal::configFactory()->getEditable('shield.settings');
   $name = $config_shield->get('credentials.shield.user');
+  $pass = $config_shield->get('credentials.shield.pass');
   $login = $config_protector->get('login');
+  $password = $config_protector->get('password');
   $state = $config_protector->get('state');
 
   if (empty($name)) {
-   $config_protector->clear('login');
-   $config_protector->save(TRUE); 
+   $config_protector->clear('login')->save(TRUE);
    drupal_set_message(t("Shield will not work without login. Please enter it"));
   } else {
-    $config_protector->set('login', $name);
-    $config_protector->save(TRUE);
+    $config_protector->set('login', $name)->save(TRUE);
+    $config_protector->set('password', $pass)->save(TRUE);
     if ($state == 1) { 
         drupal_set_message(t("Your Shield is raised"));
     } else {
-        $config_shield->set('credentials.shield.user', '')->save(TRUE);
-       // $config_shield->save(TRUE);
-        drupal_set_message(t("Shield must be disabled"));
+      $config_shield->clear('credentials.shield.user')->save(TRUE);
+      $config_shield->clear('credentials.shield.pass')->save(TRUE);
+        drupal_set_message(t("Shield is disabled now but will be activated if there is new core update"));
         \Drupal::logger('prot')->notice(print_r($login, TRUE));
 
     }
-
   }
   }
