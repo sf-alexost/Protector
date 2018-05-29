@@ -1,8 +1,0 @@
-
-protector.default_controller_check_status:
-  path: '/protector/check_status'
-  defaults:
-    _controller: '\Drupal\protector\Controller\DefaultController::check_status'
-    _title: 'check_status'
-  requirements:
-    _permission: 'access content'

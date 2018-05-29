@@ -1,4 +1,4 @@
-This module can be used for managing shield module https://www.drupal.org/project/shield, which provides the basic authentication for entering your project. 
+This module can be used for managing shield module https://www.drupal.org/project/shield, which provides the basic authentication for your project. 
 Usually the new drupal release uncovers the new vulnerabilities. If you don`t want to update your project immediately, it`s time to close it by shield. Protector module checks the available updates, automatically enables shield if they are present and disables it if your core matches the last release.
 
 Dependencies: shield

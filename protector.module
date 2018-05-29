@@ -9,7 +9,6 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Site\Settings;
-use Drupal\shield\ShieldMiddleware;
 
 /**
  * Implements hook_help().
@@ -44,8 +43,6 @@ function protector_theme() {
 function protector_cron() {
 $config_shield = \Drupal::configFactory()->getEditable('shield.settings');
 $config_protector = \Drupal::configFactory()->getEditable('protector.settings');
-$pass = $config_shield->get('credentials.shield.pass');
-$name = $config_shield->get('credentials.shield.user');
 $login = $config_protector->get('login');
 $password = $config_protector->get('password');
 $state = $config_protector->get('state');
@@ -78,7 +75,7 @@ else {
 
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
 */
 function protector_form_shield_admin_settings_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config_protector = \Drupal::configFactory()->getEditable('protector.settings');
@@ -105,7 +102,6 @@ function _protector_form_shield_admin_settings_submit($form, FormStateInterface 
   $name = $config_shield->get('credentials.shield.user');
   $pass = $config_shield->get('credentials.shield.pass');
   $login = $config_protector->get('login');
-  $password = $config_protector->get('password');
   $state = $config_protector->get('state');
 
   if (empty($name)) {
